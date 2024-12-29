@@ -1,0 +1,33 @@
+#!/bin/bash
+
+
+#The first line of the script uses `#!/bin/bash` tells the system to use the Bash shell to interpret and execute the script.
+
+# Task 2 : Echo
+
+echo "Hello, Alexthecloudengineer is here again!"
+
+
+# Task 3 : Variable
+
+your_name = Alex is my name
+your_job = I'm a cloud engineer
+
+# Task 4 : Calling out variable
+
+echo "$your_name, $your_job"
+
+# Task 5 : Inbuilt Variable
+
+echo "Print the current working directory $$PWD"
+echo "What's today date? $date"
+echo "The current user is $USER"
+
+# Task 6 : Wildcard
+
+if [ -d "$directory" ]; then
+  echo "Listing all *.$extension files in $directory:"
+  ls "$directory"/*."$extension" 2>/dev/null || echo "No files with the .$extension extension found."
+else
+  echo "Directory does not exist."
+fi
