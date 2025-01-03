@@ -1,0 +1,49 @@
+#!/bin/bash
+
+#Part 1
+
+#Task 1
+
+echo "Welcome here, here is a list of all files and directories: "
+
+#Task 2
+
+while true; do
+
+ ls -ls
+
+done
+
+#Task 3
+
+while true; do
+    echo "The list of files in this directory:"
+    ls  # Display the list of files and directories
+    read -p "Enter 'Exit' to quit: " Input
+
+    if [[ "$Input" == "Exit" ]]; then
+        echo "Exiting. Goodbye!"
+        break  # Exit the loop
+    fi
+done
+
+
+#Part 2
+
+#Task 4 :
+
+while true; do
+    ls  # Display the list of files and directories
+    read -p "Enter a line of text: " text  # Prompt the user for input
+
+    # Check if the input is empty
+    if [ -z "$text" ]; then
+        echo "Exiting. Goodbye!"  # If empty input, exit the loop
+        break
+    else
+        # Count characters in the text
+        char_count=$(echo -n "$text" | wc -c)  # Correct variable usage and syntax
+        echo "Character count: $char_count"  # Display the character count
+    fi
+done
+
