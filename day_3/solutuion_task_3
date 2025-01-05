@@ -1,0 +1,81 @@
+#!/bin/bash
+
+# Function to display usage information
+usage() {
+    echo "Usage: $0 [command]"
+    echo "Commands:"
+    echo "  create      Create a new user"
+    echo "  delete      Delete an existing user"
+    echo "  list        List all users"
+    echo "  help        Show this help message"
+    exit 0
+}
+
+# Function to create a user
+create_user() {
+    echo "Enter the username to create: "
+    read -p "Username: " username
+
+    # Check if the user already exists
+    if id "$username" &>/dev/null; then
+        echo "Error: User '$username' already exists."
+        exit 1
+    fi
+
+    # Create the user
+    sudo useradd -m "$username"
+    if [ $? -eq 0 ]; then
+        echo "User '$username' created successfully."
+
+        # Set the user's password
+        echo "Enter the password for '$username': "
+        read -s -p "Password: " password
+        echo
+        echo "$username:$password" | sudo chpasswd
+        echo "Password set successfully for '$username'."
+    else
+        echo "Failed to create user '$username'."
+        exit 1
+    fi
+}
+
+# Function to delete a user
+delete_user() {
+    echo "Enter the username to delete: "
+    read -p "Username: " username
+
+    # Check if the user exists
+    if id "$username" &>/dev/null; then
+        sudo userdel -r "$username"  # -r flag removes the user's home directory
+        echo "User account '$username' deleted successfully."
+    else
+        echo "Error: User '$username' does not exist."
+        exit 1
+    fi
+}
+
+# Function to list all users
+list_users() {
+    echo "Listing all users:"
+    cut -d: -f1 /etc/passwd
+}
+
+# Main script logic
+case $1 in
+    create)
+        create_user
+        ;;
+    delete)
+        delete_user
+        ;;
+    list)
+        list_users
+        ;;
+    help|--help|-h)
+        usage
+        ;;
+    *)
+        echo "Invalid command. Use '$0 help' to see available commands."
+        exit 1
+        ;;
+esac
