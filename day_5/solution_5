@@ -1,0 +1,78 @@
+#!/bin/bash
+
+# Log Analyzer and Report Generator
+
+# Check if the log file path is provided
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <log_file>"
+    exit 1
+fi
+
+LOG_FILE=$1
+
+# Verify if the log file exists
+if [ ! -f "$LOG_FILE" ]; then
+    echo "Error: Log file '$LOG_FILE' does not exist."
+    exit 1
+fi
+
+# Variables
+DATE=$(date +"%Y-%m-%d")
+SUMMARY_REPORT="summary_report_$DATE.txt"
+ARCHIVE_DIR="./processed_logs"
+declare -A ERROR_COUNT
+
+# Initialize counters
+TOTAL_LINES=0
+ERROR_COUNT_TOTAL=0
+
+# Process the log file
+echo "Processing log file: $LOG_FILE"
+
+while IFS= read -r LINE || [[ -n "$LINE" ]]; do
+    ((TOTAL_LINES++))
+
+    # Count error messages
+    if [[ "$LINE" =~ ERROR|Failed ]]; then
+        ((ERROR_COUNT_TOTAL++))
+        MESSAGE=$(echo "$LINE" | awk -F 'ERROR|Failed' '{print $2}' | xargs)
+        ((ERROR_COUNT["$MESSAGE"]++))
+    fi
+
+    # Find critical events
+    if [[ "$LINE" =~ CRITICAL ]]; then
+        echo "Line $TOTAL_LINES: $LINE" >> critical_events.txt
+    fi
+done < "$LOG_FILE"
+
+# Get top 5 error messages
+TOP_ERRORS=$(for KEY in "${!ERROR_COUNT[@]}"; do
+    echo "${ERROR_COUNT[$KEY]}:$KEY"
+done | sort -rn | head -5)
+
+# Generate summary report
+{
+    echo "Log Analysis Summary Report - $DATE"
+    echo "-----------------------------------"
+    echo "Log File: $LOG_FILE"
+    echo "Total Lines Processed: $TOTAL_LINES"
+    echo "Total Errors: $ERROR_COUNT_TOTAL"
+    echo ""
+    echo "Top 5 Error Messages:"
+    echo "$TOP_ERRORS" | while IFS=: read -r COUNT MESSAGE; do
+        echo "- $MESSAGE ($COUNT occurrences)"
+    done
+    echo ""
+    echo "Critical Events (from critical_events.txt):"
+    cat critical_events.txt
+} > "$SUMMARY_REPORT"
+
+# Cleanup temporary file
+rm -f critical_events.txt
+
+# Archive processed log file
+mkdir -p "$ARCHIVE_DIR"
+mv "$LOG_FILE" "$ARCHIVE_DIR"
+
+echo "Log analysis complete. Summary report saved to $SUMMARY_REPORT"
+echo "Processed log file archived to $ARCHIVE_DIR"
